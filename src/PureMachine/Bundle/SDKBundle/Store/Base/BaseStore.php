@@ -8,6 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use PureMachine\Bundle\SDKBundle\Exception\StoreException;
 use PureMachine\Bundle\SDKBundle\Store\Annotation as Store;
 use Symfony\Component\Validator\Constraint;
+use PureMachine\Bundle\SDKBundle\Store\Annotation\Persistence\PersistanceAnnotationInterface;
 
 /**
  * Base class for store that does not have modifiedProperties system
@@ -173,7 +174,7 @@ abstract class BaseStore implements JsonSerializable
      *
      * @param array or stdClass $data
      */
-    protected function initialize($data)
+    public function initialize($data)
     {
         //Force conversion to array
         if (is_object($data)) $data = (array) $data;
@@ -269,6 +270,57 @@ abstract class BaseStore implements JsonSerializable
                 $this->$method($value);
             }
         }
+    }
+
+    public static function getPersistenceConfig()
+    {
+        $class = get_called_class();
+        $jsonSchema = self::$jsonSchema[$class];
+        $definition = (array)$jsonSchema->definition;
+        $keys = array_keys($definition);
+
+        /*
+         * Searching for the persistance property
+         */
+        foreach($keys as $property) {
+            if(isset($definition[$property]->persistance)) {
+                $adapterClassname = $definition[$property]->persistance->adapter;
+                $package = $definition[$property]->persistance->package;
+
+                return array(
+                    "package" => $package,
+                    "adapterClass" => $adapterClassname,
+                    "property" => $property,
+                );
+
+            }
+        }
+        throw new StoreException(
+            "The class has not been configured to persist on database",
+            StoreException::STORE_007
+        );
+    }
+
+    public function hydrate()
+    {
+        $persistenceConfig = $this->getPersistenceConfig();
+
+        return $persistenceConfig["adapterClass"]::hydrate(
+            $this,
+            $persistenceConfig["package"],
+            $persistenceConfig["property"]
+        );
+    }
+
+    public function save()
+    {
+        $persistenceConfig = $this->getPersistenceConfig();
+
+        return $persistenceConfig["adapterClass"]::save(
+            $this,
+            $persistenceConfig["package"],
+            $persistenceConfig["property"]
+        );
     }
 
     /*
@@ -464,6 +516,11 @@ abstract class BaseStore implements JsonSerializable
                     $definition[$prop->getName()]->type = $annotation->type;
                 } elseif ($annotation instanceof Constraint) {
                     $definition[$prop->getName()]->validationConstraints[] = static::getClassName($annotation);
+                } elseif ($annotation instanceof PersistanceAnnotationInterface) {
+                    $definition[$prop->getName()]->persistance = (object)array(
+                        "adapter" => $annotation->getAdapter(),
+                        "package" => $annotation->getPackage(),
+                    );
                 }
 
                 static::schemaBuilderHook($annotation, $prop, $definition);
