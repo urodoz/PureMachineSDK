@@ -33,20 +33,20 @@ class StoreHelperTest extends WebTestCase
         /*
          * Generating input data with StoreA
          */
-        $input = (object) [
-            'store' => (object) [
-                'titleA' => 'fooA',
-                '_className' => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreA',
-            ],
-            '_className' => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreAB',
-        ];
+        $input = (object) array(
+            "store" => (object) array(
+                    "titleA" => "fooA",
+                    "_className" => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreA'
+                ),
+            "_className" => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreAB'
+        );
 
         $unserializedItem = StoreHelper::unSerialize(
                 $input,
-                [
+                array(
                     'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreA',
                     'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreB',
-                ],
+                ),
                 new AnnotationReader(),
                 $container
                 );
@@ -59,20 +59,20 @@ class StoreHelperTest extends WebTestCase
         /*
          * Generating input data with StoreB
          */
-        $input = (object) [
-            'store' => (object) [
+        $input = (object) array(
+            'store' => (object) array(
                 'titleB' => 'fooB',
                 '_className' => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreB',
-            ],
+            ),
             '_className' => 'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreAB',
-        ];
+        );
 
         $unserializedItem = StoreHelper::unSerialize(
                 $input,
-                [
+                array(
                     'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreA',
                     'PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreB',
-                ],
+                ),
                 new AnnotationReader(),
                 $container
                 );

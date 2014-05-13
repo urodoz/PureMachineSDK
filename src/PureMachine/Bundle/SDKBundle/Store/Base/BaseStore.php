@@ -76,8 +76,10 @@ abstract class BaseStore implements JsonSerializable
     public function getViolations($ignoredVioltations=null)
     {
         if (!$this->isValidated())
-            throw new StoreException("You must call validate() method before.",
-                                      StoreException::STORE_002);
+            throw new StoreException(
+                "You must call validate() method before.",
+                StoreException::STORE_002
+            );
 
         if (!is_array($ignoredVioltations)) {
             return $this->violations;
@@ -107,11 +109,15 @@ abstract class BaseStore implements JsonSerializable
     public function raiseIfInvalid()
     {
         if (!$this->isValidated())
-            throw new StoreException("You must call validate() method before.",
-                                     StoreException::STORE_002);
+            throw new StoreException(
+                "You must call validate() method before.",
+                StoreException::STORE_002
+            );
         if (count($this->violations) > 0)
-            throw new StoreException('Store validation error :' . $this->violations[0],
-                                     StoreException::STORE_002);
+            throw new StoreException(
+                'Store validation error :' . $this->violations[0],
+                StoreException::STORE_002
+            );
     }
 
     /**

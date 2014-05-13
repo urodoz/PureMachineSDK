@@ -294,57 +294,6 @@ class StoreTest extends WebTestCase
 
     /**
      * @code
-     * phpunit -v --filter testDateTimeValueOnStore -c app vendor/puremachine/sdk/src/PureMachine/Bundle/SDKBundle/Tests/Store/StoreTest.php
-     * @endcode
-     */
-    public function testDateTimeValueOnStore()
-    {
-        $newRef = new \DateTime("now");
-        $sampleStore = new StoreDateTime();
-        $sampleStore->setValue($newRef);
-
-        //The serialize value should be the unix timestamp
-        $serializedStore = $sampleStore->serialize();
-        $this->assertTrue(is_int($serializedStore->value));
-        $this->assertEquals((int) $newRef->format("U"), $serializedStore->value);
-
-        //Getting the datetime should return a DateTime object
-        $fetchedValue = $sampleStore->getValue();
-        $this->assertTrue($fetchedValue instanceof \DateTime);
-        $this->assertEquals($newRef->format("U"), $fetchedValue->format("U"));
-
-        //Trying to construct a negative timestamp
-        try {
-            $sampleStore = new StoreDateTime(array(
-                "value" => -1,
-            ));
-
-            $this->assertTrue(false);
-        } catch (\Exception $e) {
-            $this->assertTrue(true);
-        }
-
-    }
-
-    /**
-     * @code
-     * phpunit -v --filter testDateTimeSettingAsIntegerValue -c app vendor/puremachine/sdk/src/PureMachine/Bundle/SDKBundle/Tests/Store/StoreTest.php
-     * @endcode
-     */
-    public function testDateTimeSettingAsIntegerValue()
-    {
-        $newRef = new \DateTime("now");
-        $unixTimestamp = $newRef->format("U");
-        $sampleStore = new StoreDateTime();
-        $sampleStore->setValue($unixTimestamp);
-
-        $fetchedDateTime = $sampleStore->getValue();
-        $this->assertTrue($fetchedDateTime instanceof \DateTime);
-        $this->assertEquals($unixTimestamp, $fetchedDateTime->format("U"));
-    }
-
-    /**
-     * @code
      * phpunit -v --filter testArrayAsObject -c app vendor/puremachine/sdk/src/PureMachine/Bundle/SDKBundle/Tests/Store/StoreTest.php
      * @endcode
      */
