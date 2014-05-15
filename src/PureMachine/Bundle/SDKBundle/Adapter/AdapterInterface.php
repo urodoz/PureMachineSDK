@@ -11,4 +11,4 @@ interface AdapterInterface
 
     public static function save(BaseStore $store, $package, $propertyKey);
 
-} 
+}

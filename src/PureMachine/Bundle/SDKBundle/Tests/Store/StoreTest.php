@@ -6,7 +6,6 @@ use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreA;
 use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreInStore;
 use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreWithStoreANotBlankIn;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\StoreDateTime;
 use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\ComposedStore;
 use PureMachine\Bundle\SDKBundle\Tests\Store\StoreClass\PrivateStore;
 

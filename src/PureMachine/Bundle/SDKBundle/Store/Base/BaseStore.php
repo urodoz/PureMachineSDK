@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use PureMachine\Bundle\SDKBundle\Exception\StoreException;
 use PureMachine\Bundle\SDKBundle\Store\Annotation as Store;
 use Symfony\Component\Validator\Constraint;
-use PureMachine\Bundle\SDKBundle\Store\Annotation\Persistence\PersistanceAnnotationInterface;
+use PureMachine\Bundle\SDKBundle\Manager\StoreManager;
 
 /**
  * Base class for store that does not have modifiedProperties system
@@ -226,9 +226,9 @@ abstract class BaseStore implements JsonSerializable
                     );
                 }
             }
-            if (array_key_exists($property, $data))
+            if (array_key_exists($property, $data)) {
                 $value = $data[$property];
-            else {
+            } else {
                 //To get default values
                 $value = $this->$property;
             }
@@ -240,6 +240,17 @@ abstract class BaseStore implements JsonSerializable
             if ($definition->type == 'object' && is_array($value)) {
                 $value = (object) $value;
                 $data[$property] = $value;
+            }
+
+            if ($definition->type == 'array' && is_array($value) && (count($definition->storeClasses)==1)) {
+                //Call add instead of set , resetting the store , we can defined the store
+                $storeClassArray = $definition->storeClasses[0];
+                $this->$property = null;
+                foreach ($value as $item) {
+                    $arrayItemStore = new $storeClassArray($item);
+                    call_user_func_array(array($this, "add".ucfirst($property)), array($arrayItemStore));
+                }
+
             }
 
             /**
@@ -272,55 +283,14 @@ abstract class BaseStore implements JsonSerializable
         }
     }
 
-    public static function getPersistenceConfig()
+    public function hydrate($alias=null)
     {
-        $class = get_called_class();
-        $jsonSchema = self::$jsonSchema[$class];
-        $definition = (array)$jsonSchema->definition;
-        $keys = array_keys($definition);
-
-        /*
-         * Searching for the persistance property
-         */
-        foreach($keys as $property) {
-            if(isset($definition[$property]->persistance)) {
-                $adapterClassname = $definition[$property]->persistance->adapter;
-                $package = $definition[$property]->persistance->package;
-
-                return array(
-                    "package" => $package,
-                    "adapterClass" => $adapterClassname,
-                    "property" => $property,
-                );
-
-            }
-        }
-        throw new StoreException(
-            "The class has not been configured to persist on database",
-            StoreException::STORE_007
-        );
+        return StoreManager::hydrate($this, $alias);
     }
 
-    public function hydrate()
+    public function save($alias=null)
     {
-        $persistenceConfig = $this->getPersistenceConfig();
-
-        return $persistenceConfig["adapterClass"]::hydrate(
-            $this,
-            $persistenceConfig["package"],
-            $persistenceConfig["property"]
-        );
-    }
-
-    public function save()
-    {
-        $persistenceConfig = $this->getPersistenceConfig();
-
-        return $persistenceConfig["adapterClass"]::save(
-            $this,
-            $persistenceConfig["package"],
-            $persistenceConfig["property"]
-        );
+        return StoreManager::save($this, $alias);
     }
 
     /*
@@ -516,11 +486,6 @@ abstract class BaseStore implements JsonSerializable
                     $definition[$prop->getName()]->type = $annotation->type;
                 } elseif ($annotation instanceof Constraint) {
                     $definition[$prop->getName()]->validationConstraints[] = static::getClassName($annotation);
-                } elseif ($annotation instanceof PersistanceAnnotationInterface) {
-                    $definition[$prop->getName()]->persistance = (object)array(
-                        "adapter" => $annotation->getAdapter(),
-                        "package" => $annotation->getPackage(),
-                    );
                 }
 
                 static::schemaBuilderHook($annotation, $prop, $definition);

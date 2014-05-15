@@ -2,7 +2,6 @@
 
 namespace PureMachine\Bundle\SDKBundle\Adapter\Mongo;
 
-use PureMachine\Bundle\SDKBundle\Adapter\Mongo\Config as MongoStaticConfig;
 use PureMachine\Bundle\SDKBundle\Store\Base\BaseStore;
 use PureMachine\Bundle\SDKBundle\Adapter\AdapterInterface;
 
@@ -11,30 +10,24 @@ class MongoAdapter implements AdapterInterface
 
     public static function hydrate(BaseStore $store, $package, $propertyKey)
     {
-        $db = MongoStaticConfig::getConnection();
-
+        $db = Connection::getConnection();
         $collection = $db->$package;
+
         $record = $collection->findOne(array(
             $propertyKey => call_user_func(array($store, "get".ucfirst($propertyKey))),
         ));
 
-        if($record) {
+        if ($record) {
             $store->initialize($record);
         }
     }
 
     public static function save(BaseStore $store, $package, $propertyKey)
     {
-        $db = MongoStaticConfig::getConnection();
+        $db = Connection::getConnection();
+
         //Get data as array
         $serializedStore = json_decode(json_encode($store->serialize()), true);
-
-        //Check if the collection exists to create
-        $collectionNames = $db->getCollectionNames();
-        $newCollection = false;
-        if(!in_array($package, $collectionNames)) {
-            $newCollection = true;
-        }
 
         /*
          * Try to find the store on database
@@ -43,7 +36,7 @@ class MongoAdapter implements AdapterInterface
         $record = $collection->findOne(array(
             $propertyKey => call_user_func(array($store, "get".ucfirst($propertyKey))),
         ));
-        if($record) {
+        if ($record) {
             /*
              * Merging the data, but keeping the priority on the new store
              * The data not sended will be keeped on database to avoid delete
@@ -55,18 +48,10 @@ class MongoAdapter implements AdapterInterface
         $saveReturn = $collection->save($serializedStore);
 
         /*
-         * If new collection create the index (unique)
-         */
-        if($newCollection) {
-            $collection->ensureIndex(array(
-                $propertyKey => 1
-            ));
-        }
-
-        /*
          * Return
          */
+
         return $saveReturn;
     }
 
-} 
+}
