@@ -293,6 +293,11 @@ abstract class BaseStore implements JsonSerializable
         return StoreManager::save($this, $alias);
     }
 
+    public function remove($alias=null)
+    {
+        return StoreManager::remove($this, $alias);
+    }
+
     /*
      * Automatically handle getter and setter functions
      * if not created
@@ -438,7 +443,7 @@ abstract class BaseStore implements JsonSerializable
         throw new \Exception("$method() method does not exits in " . get_class($this));
     }
 
-    protected function isStoreProperty($property)
+    public function isStoreProperty($property)
     {
         $schema = $this->getJsonSchema();
 

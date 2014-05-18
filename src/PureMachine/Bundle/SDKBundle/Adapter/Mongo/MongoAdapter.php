@@ -22,6 +22,18 @@ class MongoAdapter implements AdapterInterface
         }
     }
 
+    public static function remove(BaseStore $store, $package, $propertyKey)
+    {
+        $db = Connection::getConnection();
+
+        $propertyKeyValue = call_user_func(array($store, "get".ucfirst($propertyKey)));
+
+        //Removing by property key
+        $db->$package->remove(array(
+            $propertyKey => $propertyKeyValue
+        ));
+    }
+
     public static function save(BaseStore $store, $package, $propertyKey)
     {
         $db = Connection::getConnection();

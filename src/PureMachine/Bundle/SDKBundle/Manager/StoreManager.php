@@ -44,6 +44,13 @@ class StoreManager
         return $adapterClass::save($store, $package, $id);
     }
 
+    public static function remove(BaseStore $store, $alias=null)
+    {
+        list($adapterClass, $package, $id) = static::getAdapter($store, $alias);
+
+        return $adapterClass::remove($store, $package, $id);
+    }
+
     public static function getAdapter(BaseStore $store, $alias=null)
     {
         $storeMapping = StaticManager::fetchData(static::CONF_STORE_KEY);
